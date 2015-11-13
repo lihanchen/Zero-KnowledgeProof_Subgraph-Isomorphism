@@ -136,4 +136,36 @@ public class Graph {
 			return null;
 		}
 	}
+
+	public HashMap<Integer, Integer> generateRandomIsomorphism() {
+		int size = vertex.size();
+		HashMap<Integer, Integer> ret = new HashMap<Integer, Integer>(size);
+		int iso[] = new int[size + 1];
+		for (int i = 1; i <= size; i++) iso[i] = i;
+		for (int i = 1; i <= size; i++) {
+			int swapIndex = 1 + (int) Math.round(Math.random() * (size - 1));
+			System.out.println(swapIndex);
+			int t = iso[i];
+			iso[i] = iso[swapIndex];
+			iso[swapIndex] = t;
+		}
+		for (int i = 1; i <= size; i++) ret.put(i, iso[i]);
+		return ret;
+	}
+
+	public HashSet<Integer> calculateModifiedSubgraph(HashSet<Integer> originalSubgraph, HashMap<Integer, Integer> iso) {
+		HashSet<Integer> ret = new HashSet<Integer>(originalSubgraph.size());
+		for (Integer i : originalSubgraph)
+			ret.add(iso.get(i));
+		return ret;
+	}
+
+	public HashMap<Integer, Integer> calculateCorrespondingIsomorphism(HashMap<Integer, Integer> originalIsomorphism, HashMap<Integer, Integer> randomIsomorphism) {
+		HashMap<Integer, Integer> ret = new HashMap<Integer, Integer>(randomIsomorphism.size());
+		for (int i = 1; i <= randomIsomorphism.size(); i++) {
+			if (!originalIsomorphism.containsKey(i)) continue;
+			ret.put(randomIsomorphism.get(i), originalIsomorphism.get(i));
+		}
+		return ret;
+	}
 }

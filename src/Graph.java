@@ -1,5 +1,7 @@
+
 import javafx.util.Pair;
 
+import java.security.MessageDigest;
 import java.util.*;
 
 public class Graph {
@@ -27,8 +29,8 @@ public class Graph {
 		}
 
 		Iterator<Boolean> iterator = ll.iterator();
-		for (i = 0; i < size; i++)
-			for (int j = 0; j < size; j++)
+		for (i = 1; i <= size; i++)
+			for (int j = 1; j <= size; j++)
 				if (iterator.next()) edges.add(new Pair<Integer, Integer>(i, j));
 	}
 
@@ -44,12 +46,12 @@ public class Graph {
 		for (Pair<Integer, Integer> p : graph.edges) edges.add(new Pair<Integer, Integer>(p.getKey(), p.getValue()));
 	}
 
-	public Graph subGraph() {
+	public HashSet<Integer> readSubGraph() {
 		Proof.scanner.nextLine();
 		HashSet<Integer> remainingSet = new HashSet<Integer>();
 		for (String num : Proof.scanner.nextLine().split(" "))
 			remainingSet.add(Integer.parseInt(num));
-		return subGraph(remainingSet);
+		return remainingSet;
 	}
 
 	public Graph subGraph(HashSet<Integer> remainingSet) {
@@ -67,7 +69,8 @@ public class Graph {
 		return newGraph;
 	}
 
-	public Graph isomorphism() {
+
+	public HashMap<Integer, Integer> readIsomorphism() {
 		Proof.scanner.nextLine();
 		HashMap<Integer, Integer> alpha = new HashMap<Integer, Integer>();
 		for (String item : Proof.scanner.nextLine().split(" ")) {
@@ -76,7 +79,7 @@ public class Graph {
 					Integer.parseInt(item.substring(0, comma)),
 					Integer.parseInt(item.substring(comma + 1, item.length())));
 		}
-		return isomorphism(alpha);
+		return alpha;
 	}
 
 	public Graph isomorphism(HashMap<Integer, Integer> alpha) {
@@ -103,5 +106,34 @@ public class Graph {
 		}
 
 		return new Graph(vertex, edges);
+	}
+
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (Integer i : this.vertex) {
+			sb.append(i);
+			sb.append(" ");
+			for (Pair<Integer, Integer> p : edges)
+				if (p.getKey().equals(i)) {
+					sb.append(p);
+					sb.append(" ");
+				}
+			sb.append("\n");
+		}
+		return sb.toString();
+	}
+
+	public void print() {
+		System.out.println(this);
+	}
+
+	public byte[] hash() {
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA1");
+			return md.digest(this.toString().getBytes());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 }

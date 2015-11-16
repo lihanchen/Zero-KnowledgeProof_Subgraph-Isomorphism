@@ -1,6 +1,8 @@
 
 import javafx.util.Pair;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.security.MessageDigest;
 import java.util.*;
 
@@ -44,6 +46,26 @@ public class Graph {
 		edges = new HashSet<Pair<Integer, Integer>>();
 		for (Integer i : graph.vertex) vertex.add(i);
 		for (Pair<Integer, Integer> p : graph.edges) edges.add(new Pair<Integer, Integer>(p.getKey(), p.getValue()));
+	}
+
+	public Graph(String graph){
+		vertex = new HashSet<Integer>();
+		edges = new HashSet<Pair<Integer, Integer>>();
+		BufferedReader bufReader = new BufferedReader(new StringReader(graph));
+		String line=null;
+		try {
+			while ((line = bufReader.readLine()) != null) {
+				if(line.charAt(0)==' ') continue;
+				vertex.add(Integer.parseInt(line.substring(0,1)));
+				for(String e : line.substring(1).split(" ")){
+					if(e==null) continue;
+					if(e.length()<3) continue;
+					edges.add(new Pair<Integer, Integer>(Integer.parseInt(e.substring(0, 1)),Integer.parseInt(e.substring(2, 3))));
+				}
+			}
+		} catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	public HashSet<Integer> readSubGraph() {
@@ -167,5 +189,35 @@ public class Graph {
 			ret.put(randomIsomorphism.get(i), originalIsomorphism.get(i));
 		}
 		return ret;
+	}
+
+	public boolean isEqual(Graph g){
+		Iterator<Integer> iterator = this.vertex.iterator();
+		while (iterator.hasNext()){
+			if(!g.vertex.contains(iterator.next()))
+				return false;
+		}
+
+		Iterator<Integer> iterator2 = g.vertex.iterator();
+		while (iterator.hasNext()){
+			if(!this.vertex.contains(iterator.next()))
+				return false;
+		}
+
+		Iterator<Pair<Integer, Integer>> iterator3 = this.edges.iterator();
+		while (iterator3.hasNext()) {
+			Pair<Integer, Integer> next = iterator3.next();
+			if (!g.edges.contains(next))
+				return false;
+		}
+
+		Iterator<Pair<Integer, Integer>> iterator4 = g.edges.iterator();
+		while (iterator4.hasNext()) {
+			Pair<Integer, Integer> next = iterator4.next();
+			if (!this.edges.contains(next))
+				return false;
+		}
+
+		return true;
 	}
 }

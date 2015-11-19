@@ -1,14 +1,11 @@
-
-import javafx.util.Pair;
-
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.security.MessageDigest;
 import java.util.*;
 
 public class Graph {
-	HashSet<Integer> vertex;
-	HashSet<Pair<Integer, Integer>> edges;
+	TreeSet<Integer> vertex;
+	TreeSet<Edge> edges;
 
 
 	public Graph() {
@@ -22,8 +19,8 @@ public class Graph {
 		} catch (NoSuchElementException e) {
 		}
 
-		vertex = new HashSet<Integer>();
-		edges = new HashSet<Pair<Integer, Integer>>();
+		vertex = new TreeSet<Integer>();
+		edges = new TreeSet<Edge>();
 
 		int size = (int) Math.sqrt(i);
 		for (i = 1; i <= size; i++) {
@@ -33,26 +30,26 @@ public class Graph {
 		Iterator<Boolean> iterator = ll.iterator();
 		for (i = 1; i <= size; i++)
 			for (int j = 1; j <= size; j++)
-				if (iterator.next()) edges.add(new Pair<Integer, Integer>(i, j));
+				if (iterator.next()) edges.add(new Edge(i, j));
 	}
 
-	public Graph(HashSet<Integer> vertex, HashSet<Pair<Integer, Integer>> edges) {
+	public Graph(TreeSet<Integer> vertex, TreeSet<Edge> edges) {
 		this.vertex = vertex;
 		this.edges = edges;
 	}
 
 	public Graph(Graph graph) {
-		vertex = new HashSet<Integer>();
-		edges = new HashSet<Pair<Integer, Integer>>();
+		vertex = new TreeSet<Integer>();
+		edges = new TreeSet<Edge>();
 		for (Integer i : graph.vertex) vertex.add(i);
-		for (Pair<Integer, Integer> p : graph.edges) edges.add(new Pair<Integer, Integer>(p.getKey(), p.getValue()));
+		for (Edge p : graph.edges) edges.add(new Edge(p.getFirst(), p.getLast()));
 	}
 
 	public Graph(String graph){
-		vertex = new HashSet<Integer>();
-		edges = new HashSet<Pair<Integer, Integer>>();
+		vertex = new TreeSet<Integer>();
+		edges = new TreeSet<Edge>();
 		BufferedReader bufReader = new BufferedReader(new StringReader(graph));
-		String line=null;
+		String line;
 		try {
 			while ((line = bufReader.readLine()) != null) {
 				if(line.charAt(0)==' ') continue;
@@ -60,7 +57,7 @@ public class Graph {
 				for(String e : line.substring(1).split(" ")){
 					if(e==null) continue;
 					if(e.length()<3) continue;
-					edges.add(new Pair<Integer, Integer>(Integer.parseInt(e.substring(0, 1)),Integer.parseInt(e.substring(2, 3))));
+					edges.add(new Edge(Integer.parseInt(e.substring(0, 1)), Integer.parseInt(e.substring(2, 3))));
 				}
 			}
 		} catch(Exception e){
@@ -68,24 +65,24 @@ public class Graph {
 		}
 	}
 
-	public HashSet<Integer> readSubGraph() {
+	public TreeSet<Integer> readSubGraph() {
 		Proof.scanner.nextLine();
-		HashSet<Integer> remainingSet = new HashSet<Integer>();
+		TreeSet<Integer> remainingSet = new TreeSet<Integer>();
 		for (String num : Proof.scanner.nextLine().split(" "))
 			remainingSet.add(Integer.parseInt(num));
 		return remainingSet;
 	}
 
-	public Graph subGraph(HashSet<Integer> remainingSet) {
+	public Graph subGraph(TreeSet<Integer> remainingSet) {
 		Graph newGraph = new Graph(this);
 		Iterator<Integer> iterator = newGraph.vertex.iterator();
 		while (iterator.hasNext())
 			if (!remainingSet.contains(iterator.next()))
 				iterator.remove();
-		Iterator<Pair<Integer, Integer>> iterator2 = newGraph.edges.iterator();
+		Iterator<Edge> iterator2 = newGraph.edges.iterator();
 		while (iterator2.hasNext()) {
-			Pair<Integer, Integer> next = iterator2.next();
-			if ((!remainingSet.contains(next.getKey())) || (!remainingSet.contains(next.getValue())))
+			Edge next = iterator2.next();
+			if ((!remainingSet.contains(next.getFirst())) || (!remainingSet.contains(next.getLast())))
 				iterator2.remove();
 		}
 		return newGraph;
@@ -105,7 +102,7 @@ public class Graph {
 	}
 
 	public Graph isomorphism(HashMap<Integer, Integer> alpha) {
-		HashSet<Integer> vertex = new HashSet<Integer>();
+		TreeSet<Integer> vertex = new TreeSet<Integer>();
 
 		for (Integer i : this.vertex)
 			if (alpha.containsKey(i))
@@ -113,18 +110,18 @@ public class Graph {
 			else
 				vertex.add(i);
 
-		HashSet<Pair<Integer, Integer>> edges = new HashSet<Pair<Integer, Integer>>();
+		TreeSet<Edge> edges = new TreeSet<Edge>();
 		int first, last;
-		for (Pair<Integer, Integer> e : this.edges) {
-			if (alpha.containsKey(e.getKey()))
-				first = alpha.get(e.getKey());
+		for (Edge e : this.edges) {
+			if (alpha.containsKey(e.getFirst()))
+				first = alpha.get(e.getFirst());
 			else
-				first = e.getKey();
-			if (alpha.containsKey(e.getValue()))
-				last = alpha.get(e.getValue());
+				first = e.getFirst();
+			if (alpha.containsKey(e.getLast()))
+				last = alpha.get(e.getLast());
 			else
-				last = e.getValue();
-			edges.add(new Pair<Integer, Integer>(first, last));
+				last = e.getLast();
+			edges.add(new Edge(first, last));
 		}
 
 		return new Graph(vertex, edges);
@@ -135,8 +132,8 @@ public class Graph {
 		for (Integer i : this.vertex) {
 			sb.append(i);
 			sb.append(" ");
-			for (Pair<Integer, Integer> p : edges)
-				if (p.getKey().equals(i)) {
+			for (Edge p : edges)
+				if (p.getFirst().equals(i)) {
 					sb.append(p);
 					sb.append(" ");
 				}
@@ -175,8 +172,8 @@ public class Graph {
 		return ret;
 	}
 
-	public HashSet<Integer> calculateModifiedSubgraph(HashSet<Integer> originalSubgraph, HashMap<Integer, Integer> iso) {
-		HashSet<Integer> ret = new HashSet<Integer>(originalSubgraph.size());
+	public TreeSet<Integer> calculateModifiedSubgraph(TreeSet<Integer> originalSubgraph, HashMap<Integer, Integer> iso) {
+		TreeSet<Integer> ret = new TreeSet<Integer>();
 		for (Integer i : originalSubgraph)
 			ret.add(iso.get(i));
 		return ret;
@@ -191,33 +188,43 @@ public class Graph {
 		return ret;
 	}
 
-	public boolean isEqual(Graph g){
-		Iterator<Integer> iterator = this.vertex.iterator();
-		while (iterator.hasNext()){
-			if(!g.vertex.contains(iterator.next()))
-				return false;
-		}
+	public boolean equals(Object g) {
+		if (!(g instanceof Graph)) return false;
+		return this.toString().equals(g.toString());
+	}
+}
 
-		Iterator<Integer> iterator2 = g.vertex.iterator();
-		while (iterator.hasNext()){
-			if(!this.vertex.contains(iterator.next()))
-				return false;
-		}
+class Edge implements Comparable<Edge> {
+	int first;
+	int last;
 
-		Iterator<Pair<Integer, Integer>> iterator3 = this.edges.iterator();
-		while (iterator3.hasNext()) {
-			Pair<Integer, Integer> next = iterator3.next();
-			if (!g.edges.contains(next))
-				return false;
-		}
+	public Edge(int first, int last) {
+		this.first = first;
+		this.last = last;
+	}
 
-		Iterator<Pair<Integer, Integer>> iterator4 = g.edges.iterator();
-		while (iterator4.hasNext()) {
-			Pair<Integer, Integer> next = iterator4.next();
-			if (!this.edges.contains(next))
-				return false;
-		}
+	public Integer getFirst() {
+		return first;
+	}
 
-		return true;
+	public Integer getLast() {
+		return last;
+	}
+
+	public int compareTo(Edge o) {
+		if (first == o.first) {
+			if (last < o.last) return -1;
+			if (last == o.last) return 0;
+			if (last > o.last) return 1;
+		} else {
+			if (first < o.first) return -1;
+			if (first == o.first) return 0;
+			if (first > o.first) return 1;
+		}
+		return 0;
+	}
+
+	public String toString() {
+		return "" + first + "," + last;
 	}
 }

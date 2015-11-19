@@ -1,30 +1,58 @@
 import java.io.*;
+import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.TreeSet;
 import java.util.Scanner;
 
 public class Proof {
 	public static Scanner scanner;
-	public static void main(String args[])throws Exception {
-
-		String serverAddress = "127.0.0.1";
-		Socket s = new Socket(serverAddress, 8080);
-		BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
-		ObjectOutputStream  oos = new ObjectOutputStream(s.getOutputStream());
+	public static Graph g, gprime, g2;
+	public static TreeSet<Integer> sub;
+	public static HashMap<Integer, Integer> iso;
 
 
+	public static void main(String args[]) throws Exception {
 
 		scanner = new Scanner(System.in);
-		Graph g = new Graph();
-		HashSet<Integer> sub = g.readSubGraph();
-		HashMap<Integer, Integer> iso = g.readIsomorphism();
+		g = new Graph();
+		sub = g.readSubGraph();
+		iso = g.readIsomorphism();
+		gprime = g.subGraph(sub);
+		g2 = gprime.isomorphism(iso);
+
+		System.out.println("\n\n\ng:");
+		g.print();
+		System.out.println("g prime:");
+		gprime.print();
+		System.out.println("g2:");
+		g2.print();
+
+		System.out.println("\n\nStart Listening on 8080");
+		ServerSocket listener = new ServerSocket(8080);
+		while (true) {
+			Socket socket = listener.accept();
+			System.out.println("Client connected from" + socket.getInetAddress().toString());
+			new ProofThread(socket).start();
+		}
+	}
+}
+
+class ProofThread extends Thread {
+	Socket s;
+
+	public ProofThread(Socket s) {
+		this. = s;
+	}
+
+	public void run() {
+		BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
+		ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+
+
 		HashMap<Integer, Integer> randomIso = g.generateRandomIsomorphism();
-		HashSet<Integer> subPrime = g.calculateModifiedSubgraph(sub, randomIso);
+		TreeSet<Integer> subPrime = g.calculateModifiedSubgraph(sub, randomIso);
 		HashMap<Integer, Integer> isoPrime = g.calculateCorrespondingIsomorphism(iso, randomIso);
 
 		Graph q = g.isomorphism(randomIso);
@@ -34,7 +62,6 @@ public class Proof {
 		System.out.println(g.toString());
 		System.out.println(subgraphPrime.toString());
 		System.out.println(g2.toString());
-
 
 		String hash = new String(q.hash(), StandardCharsets.UTF_8);
 		System.out.println(hash);
@@ -46,25 +73,25 @@ public class Proof {
 
 		String challenge = input.readLine();
 		System.out.println(challenge);
-		if(Integer.parseInt(challenge)==1){
+		if (Integer.parseInt(challenge) == 1) {
 			oos.writeObject(q.toString());
 			oos.writeObject(randomIso);
-		}else{
+		} else {
 			oos.writeObject(subgraphPrime.toString());
 			oos.writeObject(isoPrime);
 		}
 
 		//get the return result:
 		String success = input.readLine();
-		System.out.println("success?: "+success);
+		System.out.println("success?: " + success);
 
 		System.out.println("Graph G: " + g.toString());
-		System.out.println("Graph random iso: "+randomIso);
-		System.out.println("Graph Q: "+q.toString());
-		System.out.println("Subgraph: "+subPrime);
-		System.out.println("Graph Qprime: "+subgraphPrime.toString());
-		System.out.println("Graph iso prime: "+isoPrime);
-		System.out.println("Graph G2: "+g2.toString());
+		System.out.println("Graph random iso: " + randomIso);
+		System.out.println("Graph Q: " + q.toString());
+		System.out.println("Subgraph: " + subPrime);
+		System.out.println("Graph Qprime: " + subgraphPrime.toString());
+		System.out.println("Graph iso prime: " + isoPrime);
+		System.out.println("Graph G2: " + g2.toString());
 	}
-
+}
 }

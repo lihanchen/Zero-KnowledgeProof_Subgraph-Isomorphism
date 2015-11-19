@@ -1,10 +1,11 @@
-import java.io.*;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.TreeSet;
 import java.util.Scanner;
+import java.util.TreeSet;
 
 public class Proof {
 	public static Scanner scanner;
@@ -16,11 +17,11 @@ public class Proof {
 	public static void main(String args[]) throws Exception {
 
 		scanner = new Scanner(System.in);
-		g = new Graph();
-		sub = g.readSubGraph();
-		iso = g.readIsomorphism();
-		gprime = g.subGraph(sub);
-		g2 = gprime.isomorphism(iso);
+		g2 = new Graph();
+		sub = g2.readSubGraph();
+		iso = g2.readIsomorphism();
+		gprime = g2.subGraph(sub);
+		g = gprime.isomorphism(iso);
 
 		System.out.println("\n\n\ng:");
 		g.print();
@@ -33,7 +34,7 @@ public class Proof {
 		ServerSocket listener = new ServerSocket(8080);
 		while (true) {
 			Socket socket = listener.accept();
-			System.out.println("Client connected from" + socket.getInetAddress().toString());
+			System.out.println("Client connected from " + socket.getInetAddress().toString());
 			new ProofThread(socket).start();
 		}
 	}
@@ -43,55 +44,83 @@ class ProofThread extends Thread {
 	Socket s;
 
 	public ProofThread(Socket s) {
-		this. = s;
+		this.s = s;
 	}
 
 	public void run() {
-		BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
-		ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+			ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
 
+			oos.writeObject(Proof.g);
+			oos.writeObject(Proof.g2);
+			oos.flush();
 
-		HashMap<Integer, Integer> randomIso = g.generateRandomIsomorphism();
-		TreeSet<Integer> subPrime = g.calculateModifiedSubgraph(sub, randomIso);
-		HashMap<Integer, Integer> isoPrime = g.calculateCorrespondingIsomorphism(iso, randomIso);
+			int roundNum = ois.readInt();
 
-		Graph q = g.isomorphism(randomIso);
-		Graph subgraphPrime = q.subGraph(subPrime);
-		Graph g2 = subgraphPrime.isomorphism(isoPrime);
+			HashMap<Integer, Integer> randomIso[] = new HashMap[roundNum];
+			TreeSet<Integer> subPrime[] = new TreeSet[roundNum];
+			HashMap<Integer, Integer> isoPrime[] = new HashMap[roundNum];
+			Graph gr[] = new Graph[roundNum];
+			Graph grprime[] = new Graph[roundNum];
+			ArrayList<byte[]> grhash = new ArrayList<byte[]>(roundNum);
+			ArrayList<byte[]> grprimehash = new ArrayList<byte[]>(roundNum);
 
-		System.out.println(g.toString());
-		System.out.println(subgraphPrime.toString());
-		System.out.println(g2.toString());
+			int factorial = 1;
+			for (int i = 1; i <= Proof.g2.vertex.size(); i++) {
+				factorial *= i;
+			}
 
-		String hash = new String(q.hash(), StandardCharsets.UTF_8);
-		System.out.println(hash);
+			if (roundNum >= factorial) {
+				System.out.println("Too many round for this graph. Disconnect");
+				return;
+			}
 
-		oos.writeObject(g.toString());
-		oos.writeObject(g2.toString());
-		oos.writeObject(hash);
-		oos.flush();
+			for (int i = 0; i < roundNum; i++) {
+				HashMap<Integer, Integer> random = Proof.g2.generateRandomIsomorphism();
+				boolean exists = false;
+				for (HashMap<Integer, Integer> h : randomIso)
+					if ((h != null) && (h.equals(random))) exists = true;
+				if (exists) {
+					i--;
+					continue;
+				}
+				randomIso[i] = random;
+				subPrime[i] = Proof.g2.calculateModifiedSubgraph(Proof.sub, random);
+				isoPrime[i] = Proof.g2.calculateCorrespondingIsomorphism(Proof.iso, random);
+				gr[i] = Proof.g2.isomorphism(randomIso[i]);
+				grprime[i] = gr[i].subGraph(subPrime[i]);
+				assert grprime[i].isomorphism(isoPrime[i]).equals(Proof.g);
+				grhash.add(gr[i].hash());
+				grprimehash.add(grprime[i].hash());
+			}
 
-		String challenge = input.readLine();
-		System.out.println(challenge);
-		if (Integer.parseInt(challenge) == 1) {
-			oos.writeObject(q.toString());
-			oos.writeObject(randomIso);
-		} else {
-			oos.writeObject(subgraphPrime.toString());
-			oos.writeObject(isoPrime);
+			oos.writeObject(grhash);
+			oos.writeObject(grprimehash);
+			oos.flush();
+
+			boolean[] challenges = (boolean[]) ois.readObject(); //True=random, False=corrisponding
+
+			ArrayList<HashMap<Integer, Integer>> changes = new ArrayList<HashMap<Integer, Integer>>(roundNum);
+			ArrayList<Graph> graphs = new ArrayList<Graph>(roundNum);
+			for (int i = 0; i < roundNum; i++) {
+				if (challenges[i]) {
+					changes.add(randomIso[i]);
+					graphs.add(gr[i]);
+				} else {
+					changes.add(isoPrime[i]);
+					graphs.add(grprime[i]);
+				}
+			}
+
+			oos.writeObject(changes);
+			oos.writeObject(graphs);
+			oos.flush();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
 		}
-
-		//get the return result:
-		String success = input.readLine();
-		System.out.println("success?: " + success);
-
-		System.out.println("Graph G: " + g.toString());
-		System.out.println("Graph random iso: " + randomIso);
-		System.out.println("Graph Q: " + q.toString());
-		System.out.println("Subgraph: " + subPrime);
-		System.out.println("Graph Qprime: " + subgraphPrime.toString());
-		System.out.println("Graph iso prime: " + isoPrime);
-		System.out.println("Graph G2: " + g2.toString());
 	}
-}
+
 }

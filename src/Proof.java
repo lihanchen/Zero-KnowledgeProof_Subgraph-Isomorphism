@@ -23,7 +23,7 @@ public class Proof {
 		gprime = g2.subGraph(sub);
 		g = gprime.isomorphism(iso);
 
-		System.out.println("\n\n\ng:");
+		System.out.println("\ng:");
 		g.print();
 		System.out.println("g prime:");
 		gprime.print();
@@ -66,14 +66,18 @@ class ProofThread extends Thread {
 			ArrayList<byte[]> grhash = new ArrayList<byte[]>(roundNum);
 			ArrayList<byte[]> grprimehash = new ArrayList<byte[]>(roundNum);
 
-			int factorial = 1;
-			for (int i = 1; i <= Proof.g2.vertex.size(); i++) {
-				factorial *= i;
-			}
 
-			if (roundNum >= factorial) {
-				System.out.println("Too many round for this graph. Disconnect");
-				return;
+			if (Proof.g2.vertex.size() <= 15) {
+				long factorial = 1;
+				for (int i = 1; i <= Proof.g2.vertex.size(); i++) {
+					factorial *= i;
+				}
+
+				if (roundNum >= factorial) {
+					System.out.println("Too many round for this graph. Disconnect");
+					s.close();
+					return;
+				}
 			}
 
 			for (int i = 0; i < roundNum; i++) {

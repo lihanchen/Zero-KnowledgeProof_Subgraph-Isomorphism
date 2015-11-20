@@ -1,3 +1,4 @@
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -19,6 +20,11 @@ public class Verify {
 
 			Graph g = (Graph) ois.readObject();
 			Graph g2 = (Graph) ois.readObject();
+
+			System.out.println("g:");
+			g.print();
+			System.out.println("g2:");
+			g2.print();
 
 			oos.writeInt(roundNum);
 			oos.flush();
@@ -52,7 +58,9 @@ public class Verify {
 				System.out.println("Verification Successful in Round " + (i + 1));
 			}
 
-			System.out.println("Verification Successful");
+			System.out.println("\nVerification Successful!!!");
+		} catch (EOFException e) {
+			System.out.println("Too many rounds for this graph");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("Verification Failed");

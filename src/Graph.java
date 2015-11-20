@@ -1,6 +1,4 @@
-import java.io.BufferedReader;
 import java.io.Serializable;
-import java.io.StringReader;
 import java.security.MessageDigest;
 import java.util.*;
 
@@ -46,25 +44,25 @@ public class Graph implements Serializable {
 		for (Edge p : graph.edges) edges.add(new Edge(p.getFirst(), p.getLast()));
 	}
 
-	public Graph(String graph) {
-		vertex = new TreeSet<Integer>();
-		edges = new TreeSet<Edge>();
-		BufferedReader bufReader = new BufferedReader(new StringReader(graph));
-		String line;
-		try {
-			while ((line = bufReader.readLine()) != null) {
-				if (line.charAt(0) == ' ') continue;
-				vertex.add(Integer.parseInt(line.substring(0, 1)));
-				for (String e : line.substring(1).split(" ")) {
-					if (e == null) continue;
-					if (e.length() < 3) continue;
-					edges.add(new Edge(Integer.parseInt(e.substring(0, 1)), Integer.parseInt(e.substring(2, 3))));
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+//	public Graph(String graph) {
+//		vertex = new TreeSet<Integer>();
+//		edges = new TreeSet<Edge>();
+//		BufferedReader bufReader = new BufferedReader(new StringReader(graph));
+//		String line;
+//		try {
+//			while ((line = bufReader.readLine()) != null) {
+//				if (line.charAt(0) == ' ') continue;
+//				vertex.add(Integer.parseInt(line.substring(0, 1)));
+//				for (String e : line.substring(1).split(" ")) {
+//					if (e == null) continue;
+//					if (e.length() < 3) continue;
+//					edges.add(new Edge(Integer.parseInt(e.substring(0, 1)), Integer.parseInt(e.substring(2, 3))));
+//				}
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 
 	public TreeSet<Integer> readSubGraph() {
 		Proof.scanner.nextLine();
@@ -98,6 +96,9 @@ public class Graph implements Serializable {
 			alpha.put(
 					Integer.parseInt(item.substring(0, comma)),
 					Integer.parseInt(item.substring(comma + 1, item.length())));
+		}
+		for (int i = 1; i <= vertex.size(); i++) {
+			if (!alpha.containsKey(i)) alpha.put(i, i);
 		}
 		return alpha;
 	}
@@ -218,7 +219,6 @@ class Edge implements Comparable<Edge>, Serializable {
 			if (last > o.last) return 1;
 		} else {
 			if (first < o.first) return -1;
-			if (first == o.first) return 0;
 			if (first > o.first) return 1;
 		}
 		return 0;

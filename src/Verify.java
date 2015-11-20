@@ -39,17 +39,17 @@ public class Verify {
 				if (challenges[i]) {
 					Graph gr = g2.isomorphism(changes.get(i));
 					if (!Arrays.equals(gr.hash(), grhash.get(i))) {
-						System.out.println("Verification Failed in Round " + i);
+						System.out.println("Verification Failed in Round " + (i + 1));
 						throw new Exception("Verification Exception");
 					}
 				} else {
 					Graph grprime = graph.get(i);
 					if (!Arrays.equals(grprime.hash(), grprimehash.get(i)) || !grprime.isomorphism(changes.get(i)).equals(g)) {
-						System.out.println("Verification Failed in Round " + i);
+						System.out.println("Verification Failed in Round " + (i + 1));
 						throw new Exception("Verification Exception");
 					}
 				}
-				System.out.println("Verification Successful in Round " + i);
+				System.out.println("Verification Successful in Round " + (i + 1));
 			}
 
 			System.out.println("Verification Successful");

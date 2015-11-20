@@ -90,7 +90,6 @@ class ProofThread extends Thread {
 				isoPrime[i] = Proof.g2.calculateCorrespondingIsomorphism(Proof.iso, random);
 				gr[i] = Proof.g2.isomorphism(randomIso[i]);
 				grprime[i] = gr[i].subGraph(subPrime[i]);
-				assert grprime[i].isomorphism(isoPrime[i]).equals(Proof.g);
 				grhash.add(gr[i].hash());
 				grprimehash.add(grprime[i].hash());
 			}
